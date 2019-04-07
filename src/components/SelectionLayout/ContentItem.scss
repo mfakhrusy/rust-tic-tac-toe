@@ -1,0 +1,29 @@
+@import "~utils/styles/variables/global";
+
+.content-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+
+  &.icon-label {
+    > button {
+      font-size: 5.5rem;
+    }
+  }
+
+  > button {
+    width: 13rem;
+    height: 13rem;
+    background-color: darken($global-bgcolor, 10%);
+    border: 1px solid rgb(163, 163, 163);
+    border-radius: 0.3rem;
+    line-height: 1.5;
+    cursor: pointer;
+
+    &:hover {
+      background-color: darken($global-bgcolor, 40%);
+      color: rgb(255, 255, 255);
+    }
+  }
+}

@@ -1,0 +1,23 @@
+$content-dimension: 45rem;
+
+.mainpage {
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  > header {
+    margin-bottom: 1rem;
+    width: $content-dimension;
+    max-width: 100vw;
+  }
+
+  .content {
+    height: $content-dimension;
+    width: $content-dimension;
+    background-color: white;
+    max-width: 100vw;
+  }
+}

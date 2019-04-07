@@ -161,40 +161,53 @@ export class MainPage extends React.Component<{}, IMainPageState> {
     }
   }
 
-  private handleRoll = (): void => {
+  private handleRoll = (rolled: boolean): void => {
     const { mode, playerInfo } = this.state;
 
     // tbh I haven't checked whether this will be EXACTLY 50 by 50 percent, lol
     // but you get the idea
     // if it's not 50 by 50, it should be negligible anyway
-    const order = Math.ceil(Math.random() + .5) === 1 ? PLAYER_INFO_ORDER_FIRST : PLAYER_INFO_ORDER_LAST;
-    const otherPlayerOrder = order === PLAYER_INFO_ORDER_FIRST ? PLAYER_INFO_ORDER_LAST : PLAYER_INFO_ORDER_FIRST;
+    if (rolled === false) {
+      const order = Math.ceil(Math.random() + .5) === 1 ? PLAYER_INFO_ORDER_FIRST : PLAYER_INFO_ORDER_LAST;
+      const otherPlayerOrder = order === PLAYER_INFO_ORDER_FIRST ? PLAYER_INFO_ORDER_LAST : PLAYER_INFO_ORDER_FIRST;
 
-    switch (mode) {
-      case MODE_SINGLE: {
-        const newState = playerInfo.map((item) => {
-          return ({
-            ...item,
-            order: item.type === PLAYER_INFO_TYPE_HUMAN ? order : otherPlayerOrder,
+      switch (mode) {
+        case MODE_SINGLE: {
+          const newState = playerInfo.map((item) => {
+            return ({
+              ...item,
+              order: item.type === PLAYER_INFO_TYPE_HUMAN ? order : otherPlayerOrder,
+            });
           });
-        });
 
-        this.setState({ playerInfo: newState });
-        break;
-      }
-      case MODE_MULTI: {
-        const newState = playerInfo.map((item) => {
-          return ({
-            ...item,
-            order: item.player === PLAYER_INFO_PLAYER_CROSS ? order : otherPlayerOrder,
+          this.setState({ playerInfo: newState });
+          break;
+        }
+        case MODE_MULTI: {
+          const newState = playerInfo.map((item) => {
+            return ({
+              ...item,
+              order: item.player === PLAYER_INFO_PLAYER_CROSS ? order : otherPlayerOrder,
+            });
           });
-        });
 
-        this.setState({ playerInfo: newState });
-        break;
+          this.setState({ playerInfo: newState });
+          break;
+        }
+        default:
+          break;
       }
-      default:
-        break;
+    } else {
+      const firstTurn: ITurnInfoType["playerTurn"] = playerInfo
+        .reduce((prev: ITurnInfoType["playerTurn"] | null, curr) => (
+          curr.order === PLAYER_INFO_ORDER_FIRST ? curr.player : prev
+        ), null);
+      const newTurnInfoState: ITurnInfoType = {
+        playerTurn: firstTurn as Exclude<ITurnInfoType["playerTurn"], null>,
+        turn: 1,
+      };
+
+      this.setState({ turnInfo: newTurnInfoState }, () => { this.handleSetViewState(VIEW_STATE_GAME); })
     }
   }
 
@@ -231,7 +244,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
   }
 
   private renderContent = (viewState: ViewStateType): React.ReactElement | null => {
-    const { mode } = this.state;
+    const { mode, playerInfo } = this.state;
 
     let content = null;
 
@@ -251,7 +264,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
         );
         break;
       case VIEW_STATE_ORDER_ROLL:
-        content = <OrderRoll onRoll={this.handleRoll} mode={mode} />;
+        content = <OrderRoll onRoll={this.handleRoll} mode={mode} playerInfo={playerInfo} />;
         break;
       default:
         content = null;

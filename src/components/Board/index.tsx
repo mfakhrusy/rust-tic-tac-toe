@@ -4,11 +4,11 @@ import { Square } from "components/Square";
 
 import "./index.scss";
 
-interface BoardProps {};
-interface BoardState {};
+interface BoardProps {}
+interface BoardState {}
 
 export class Board extends React.Component<BoardProps, BoardState> {
-  render() {
+  public render() {
     return (
       <div className="board">
         <div className="board-row board-top">
@@ -27,6 +27,6 @@ export class Board extends React.Component<BoardProps, BoardState> {
           <Square />
         </div>
       </div>
-    )
+    );
   }
 }

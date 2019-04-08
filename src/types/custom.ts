@@ -31,4 +31,13 @@ export interface IPlayerInfoType {
 export interface ITurnInfoType {
   playerTurn: typeof PLAYER_INFO_PLAYER_CIRCLE | typeof PLAYER_INFO_PLAYER_CROSS | null;
   turn: number;
+  winner: typeof PLAYER_INFO_PLAYER_CIRCLE | typeof PLAYER_INFO_PLAYER_CROSS | null;
 }
+
+export type BoardSquareContentType = typeof PLAYER_INFO_PLAYER_CIRCLE | typeof PLAYER_INFO_PLAYER_CROSS | "";
+
+export type BoardGameStateType = [
+  [BoardSquareContentType, BoardSquareContentType, BoardSquareContentType],
+  [BoardSquareContentType, BoardSquareContentType, BoardSquareContentType],
+  [BoardSquareContentType, BoardSquareContentType, BoardSquareContentType],
+];

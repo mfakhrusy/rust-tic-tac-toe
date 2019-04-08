@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Board } from "components/Board";
+import { Game } from "components/Game";
 import { ModeInfo } from "components/ModeInfo";
 import { ModeSelection } from "components/ModeSelection";
 import { Navigator } from "components/Navigator";
@@ -64,6 +64,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
       turnInfo: {
         playerTurn: null,
         turn: 0,
+        winner: null,
       },
       viewState: VIEW_STATE_MODE_SELECTION,
     };
@@ -71,7 +72,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
 
   public render() {
     const { viewState, mode, playerInfo, turnInfo } = this.state;
-    const showBackButton = mode !== null;
+    const showBackButton = mode !== null && viewState !== VIEW_STATE_GAME;
     const showForwardButton = mode !== null && false;
 
     return (
@@ -162,7 +163,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
   }
 
   private handleRoll = (rolled: boolean): void => {
-    const { mode, playerInfo } = this.state;
+    const { mode, playerInfo, turnInfo } = this.state;
 
     // tbh I haven't checked whether this will be EXACTLY 50 by 50 percent, lol
     // but you get the idea
@@ -203,6 +204,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
           curr.order === PLAYER_INFO_ORDER_FIRST ? curr.player : prev
         ), null);
       const newTurnInfoState: ITurnInfoType = {
+        ...turnInfo,
         playerTurn: firstTurn as Exclude<ITurnInfoType["playerTurn"], null>,
         turn: 1,
       };
@@ -244,13 +246,13 @@ export class MainPage extends React.Component<{}, IMainPageState> {
   }
 
   private renderContent = (viewState: ViewStateType): React.ReactElement | null => {
-    const { mode, playerInfo } = this.state;
+    const { mode, playerInfo, turnInfo } = this.state;
 
     let content = null;
 
     switch (viewState) {
       case VIEW_STATE_GAME:
-        content = <Board />;
+        content = <Game turnInfo={turnInfo} />;
         break;
       case VIEW_STATE_MODE_SELECTION:
         content = <ModeSelection onSelectMode={this.handleModeSelection} />;

@@ -2,31 +2,42 @@ import * as React from "react";
 
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { generateIconLabel } from "utils/helpers";
 
-import { PLAYER_INFO_PLAYER_CIRCLE, PLAYER_INFO_PLAYER_CROSS } from "utils/constants";
+import { BoardSquareContentType } from "types/custom";
+
 import "./index.scss";
 
 const CONTENT_EMPTY = "";
 
-interface ISquareProps {
-  content: typeof PLAYER_INFO_PLAYER_CIRCLE | typeof PLAYER_INFO_PLAYER_CROSS | "";
+interface IBoardSquareProps {
+  content: BoardSquareContentType;
+  x: number;
+  y: number;
+  onClick: (x: number, y: number) => void;
 }
 
-export class Square extends React.Component<ISquareProps, {}> {
-  public static defaultProps = {
-    content: CONTENT_EMPTY,
-  };
-
+export class Square extends React.Component<IBoardSquareProps, {}> {
   public render() {
     const { content } = this.props;
 
-    const iconLabel: IconProp = generateIconLabel(content as Exclude<ISquareProps["content"], "">);
+    const iconLabel: IconProp = generateIconLabel(content as Exclude<IBoardSquareProps["content"], "">);
 
     return (
       <div className="square">
-        {content === CONTENT_EMPTY ? null : <FontAwesomeIcon icon={iconLabel} />}
+        <button onClick={this.handleClick}>
+          {content === CONTENT_EMPTY ? null : <FontAwesomeIcon icon={iconLabel} />}
+        </button>
       </div>
     );
+  }
+
+  private handleClick = (e: React.MouseEvent): void => {
+    e.preventDefault();
+
+    const { onClick, x, y } = this.props;
+
+    onClick(x, y);
   }
 }

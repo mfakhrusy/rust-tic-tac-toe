@@ -68,8 +68,6 @@ export class Board extends React.Component<IBoardProps, IBoardState> {
       return row;
     });
 
-    console.log(newGameState);
-
     this.setState({ gameState: newGameState as any });
 
     onClickSquare();

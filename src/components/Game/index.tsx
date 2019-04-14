@@ -7,6 +7,7 @@ import { ITurnInfoType } from "types/custom";
 
 interface IGameProps {
   turnInfo: ITurnInfoType;
+  onClickSquare: () => void;
 }
 
 export interface IGameState {
@@ -23,11 +24,11 @@ export class Game extends React.Component<IGameProps, IGameState> {
   }
 
   public render() {
-    const { turnInfo } = this.props;
+    const { turnInfo, onClickSquare } = this.props;
     const { showBoard } = this.state;
 
     if (showBoard) {
-      return <Board turnInfo={turnInfo} />;
+      return <Board turnInfo={turnInfo} onClickSquare={onClickSquare} />;
     }
     return (
       <Countdown timeLimit={5} onFinishCountdown={this.showBoard} />

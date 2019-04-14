@@ -8,6 +8,7 @@ import "./index.scss";
 
 interface IBoardProps {
   turnInfo: ITurnInfoType;
+  onClickSquare: () => void;
 }
 
 interface IBoardState {
@@ -52,7 +53,25 @@ export class Board extends React.Component<IBoardProps, IBoardState> {
   }
 
   private setBoardSquare = (x: number, y: number): void => {
+    const { onClickSquare, turnInfo } = this.props;
     const { gameState } = this.state;
-    const copiedGameState = gameState.slice();
+
+    const newGameState = gameState.map((row, xIndex) => {
+      if (xIndex === x) {
+        return row.map((cell, yIndex) => {
+          if (yIndex === y) {
+            return turnInfo.playerTurn;
+          }
+          return cell;
+        });
+      }
+      return row;
+    });
+
+    console.log(newGameState);
+
+    this.setState({ gameState: newGameState as any });
+
+    onClickSquare();
   }
 }

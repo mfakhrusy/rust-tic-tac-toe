@@ -11,6 +11,14 @@
 
   border: 1px solid #6b6b6b;
   background-color: aliceblue;
-  cursor: pointer;
   font-family: 'Major Mono Display', monospace;
+
+  button {
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+    background-color: inherit;
+    font-size: 8rem;
+    border: none;
+  }
 }

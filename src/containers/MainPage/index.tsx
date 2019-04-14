@@ -110,6 +110,19 @@ export class MainPage extends React.Component<{}, IMainPageState> {
     });
   }
 
+  private handleSetNextTurn = (): void => {
+    const { turnInfo } = this.state;
+
+    let nextPlayer = null;
+    if (turnInfo.playerTurn === PLAYER_INFO_PLAYER_CIRCLE) {
+      nextPlayer = PLAYER_INFO_PLAYER_CROSS;
+    } else {
+      nextPlayer = PLAYER_INFO_PLAYER_CIRCLE;
+    }
+    const newState = Object.assign({}, turnInfo, { playerTurn: nextPlayer, turn: turnInfo.turn + 1 });
+    this.setState({ turnInfo: newState });
+  }
+
   private handlePlayerSelection = (playerType: IPlayerInfoType["player"]): void => {
     const { mode, playerInfo } = this.state;
 
@@ -252,7 +265,7 @@ export class MainPage extends React.Component<{}, IMainPageState> {
 
     switch (viewState) {
       case VIEW_STATE_GAME:
-        content = <Game turnInfo={turnInfo} />;
+        content = <Game turnInfo={turnInfo} onClickSquare={this.handleSetNextTurn} />;
         break;
       case VIEW_STATE_MODE_SELECTION:
         content = <ModeSelection onSelectMode={this.handleModeSelection} />;

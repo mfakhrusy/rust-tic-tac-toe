@@ -53,23 +53,31 @@ export class Board extends React.Component<IBoardProps, IBoardState> {
   }
 
   private setBoardSquare = (x: number, y: number): void => {
-    const { onClickSquare, turnInfo } = this.props;
+    const { onClickSquare } = this.props;
+
+    const newGameState = this.generateNewGameState(x, y);
+
+    this.setState({ gameState: newGameState as BoardGameStateType });
+
+    onClickSquare();
+  }
+
+  private generateNewGameState = (x: number, y: number): BoardGameStateType => {
     const { gameState } = this.state;
+    const { turnInfo } = this.props;
 
     const newGameState = gameState.map((row, xIndex) => {
       if (xIndex === x) {
-        return row.map((cell, yIndex) => {
+        const newRow = row.map((cell, yIndex) => {
           if (yIndex === y) {
-            return turnInfo.playerTurn;
+            return turnInfo.playerTurn as Exclude<ITurnInfoType["playerTurn"], null>;
           }
           return cell;
         });
+        return newRow;
       }
       return row;
     });
-
-    this.setState({ gameState: newGameState as any });
-
-    onClickSquare();
+    return newGameState as BoardGameStateType;
   }
 }

@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.randomize-player {
+    visibility:hidden;
+}
+
+.randomize-player::after {
+    content: "";
+    line-height: initial;
+    visibility: visible;
+    display: block;
+    animation-name: randomize-player-animation;
+    animation-duration: 0.2s;
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+    color: #000000;
+    font-size: 2rem;
+}
+
+.randomize-player-inverse {
+    visibility:hidden;
+}
+
+.randomize-player-inverse::after {
+    content: "";
+    line-height: initial;
+    visibility: visible;
+    display: block;
+    animation-name: randomize-player-animation-inverse;
+    animation-duration: 0.2s;
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+    color: #000000;
+    font-size: 2rem;
+}
+
+@keyframes randomize-player-animation {
+  from {
+    content: 'O';
+  }
+  50% {
+    content: 'X';
+  }
+  to {
+    content: 'O';
+  }
+}
+
+@keyframes randomize-player-animation-inverse {
+  from {
+    content: 'X';
+  }
+  50% {
+    content: 'O';
+  }
+  to {
+    content: 'X';
+  }
+}
+

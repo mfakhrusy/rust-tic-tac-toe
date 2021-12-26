@@ -1,0 +1,24 @@
+{
+  "name": "tic-tac-toe",
+  "version": "1.0.0",
+  "description": "> Basic Rust-only template for your new Seed app.",
+  "main": "index.js",
+  "scripts": {
+    "css:dev": "tailwindcss -i ./src/style.css -o ./css/style.min.css --minify --watch",
+    "css:build": "tailwindcss -i ./src/style.css -o ./css/style.min.css --minify",
+    "dev": "trunk serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfakhrusy/rust-tic-tac-toe.git"
+  },
+  "author": "M Fahru",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mfakhrusy/rust-tic-tac-toe/issues"
+  },
+  "homepage": "https://github.com/mfakhrusy/rust-tic-tac-toe#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.0.7"
+  }
+}

@@ -9,10 +9,13 @@ mod main_game;
 mod model;
 mod name_selection;
 mod pick_game_mode;
+mod roll_player_turn;
 
+use components::player_symbol;
 use model::{
     GameMode, GameStatus, GameType, Model, Msg, Player, PlayerStatus, PlayerSymbol, Players,
 };
+use rand::Rng;
 use seed::{prelude::*, *};
 
 // ------ ------
@@ -30,6 +33,7 @@ fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
             player_two: None,
         },
         game_type: GameType::SingleComputer,
+        game_turn: None,
     }
 }
 
@@ -40,7 +44,7 @@ fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
 // `update` describes how to handle each `Msg`.
 fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
     match msg {
-        Msg::StartGame => model.game_status = GameStatus::GameMode,
+        Msg::GoToGameModeSelection => model.game_status = GameStatus::GameMode,
         Msg::PickGameMode(game_mode) => {
             model.game_mode = Some(game_mode);
             model.game_status = GameStatus::NameSelection;
@@ -55,7 +59,7 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
         }
         Msg::GoBack => match model.game_status {
             GameStatus::MainGame => {
-                model.game_status = GameStatus::NameSelection;
+                model.game_status = GameStatus::TurnSelection;
             }
             GameStatus::GameMode => {
                 model.game_status = GameStatus::InitGame;
@@ -63,7 +67,15 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
             }
             GameStatus::NameSelection => {
                 model.game_status = GameStatus::GameMode;
+                model.players = Players {
+                    player_one: None,
+                    player_two: None,
+                };
                 model.game_mode = None;
+            }
+            GameStatus::TurnSelection => {
+                model.game_status = GameStatus::NameSelection;
+                model.game_turn = None;
             }
             _ => {}
         },
@@ -73,7 +85,6 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
                 symbol: PlayerSymbol::X,
                 status: None,
             });
-            // model.game_status = GameStatus::RollPlayer(RollPlayer::Init);
         }
         Msg::SetPlayerTwo(name) => {
             model.players.player_two = Some(Player {
@@ -81,7 +92,18 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
                 symbol: PlayerSymbol::O,
                 status: None,
             });
-            // model.game_status = GameStatus::RollPlayer(RollPlayer::Init);
+        }
+        Msg::RollPlayerTurn => {
+            // roll first player
+            let num = rand::thread_rng().gen_range(0..=1);
+            model.game_turn = match num {
+                0 => model.players.player_one.clone(),
+                _ => model.players.player_two.clone(),
+            };
+            model.game_status = GameStatus::TurnSelection;
+        }
+        Msg::StartGame => {
+            model.game_status = GameStatus::MainGame;
         }
     }
 }
@@ -140,7 +162,6 @@ fn header(model: &Model) -> Node<Msg> {
 }
 
 fn view(model: &Model) -> Node<Msg> {
-    let x = 4;
     div![
         C!["w-screen h-screen flex flex-col items-center justify-center"],
         div![
@@ -157,6 +178,7 @@ fn view(model: &Model) -> Node<Msg> {
                             &model.game_type,
                             &model.players,
                         ),
+                    GameStatus::TurnSelection => roll_player_turn::view(&model.game_turn, &model.players),
                     GameStatus::MainGame => main_game::view(),
                 }
             ],
@@ -177,21 +199,21 @@ fn view(model: &Model) -> Node<Msg> {
                         match model.game_status {
                             GameStatus::NameSelection => {
                             match (model.players.player_one.as_ref(), model.players.player_two.as_ref()) {
-                                (Some(_), Some(_)) => "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-20 mt-4",
-                                _ => "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-20 mt-4 cursor-not-allowed"
+                                (Some(_), Some(_)) => "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-40 mt-4",
+                                _ => "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-40 mt-4 cursor-not-allowed"
                             }
                         },
                             _ => "invisible font-bold py-2 mt-4",
                         }
                     ],
-                    "Next",
+                    "Roll Player Turn",
                     attrs! {
                         At::Disabled => match (model.players.player_one.as_ref(), model.players.player_two.as_ref()) {
                             (Some(_), Some(_)) => false.as_at_value(),
                             _ => true.as_at_value(),
                         }
                     },
-                    ev(Ev::Click, |_| Msg::GoBack),
+                    ev(Ev::Click, |_| Msg::RollPlayerTurn),
                 ],
             ],
         ],

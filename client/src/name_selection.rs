@@ -13,9 +13,25 @@ enum PlayerType {
 }
 
 fn view_human_player(player_type: PlayerType, player: &Option<Player>) -> Node<Msg> {
-    let options = NAMES
-        .iter()
-        .map(|name| option![attrs! {At::Value => name}, name]);
+    let active_option = match player {
+        None => None,
+        Some(player) => match player.name.as_str() {
+            "" => None,
+            _ => Some(player.name.clone()),
+        },
+    };
+
+    let options = NAMES.iter().map(|name| {
+        option![
+            attrs! {At::Value => name,
+                At::Selected => match active_option.clone() {
+                    None => false.as_at_value(),
+                    Some(active_option) => (active_option == name.to_string()).as_at_value(),
+                }
+            },
+            name
+        ]
+    });
 
     div![
         C!["py-4 flex flex-col items-center justify-center"],
@@ -23,7 +39,12 @@ fn view_human_player(player_type: PlayerType, player: &Option<Player>) -> Node<M
         select![
             attrs! {At::Name => "name"},
             option![
-                attrs! {At::Value => "", At::Selected => true, At::Disabled => true},
+                attrs! {At::Value => "", At::Selected =>
+                match active_option {
+                    None => true.as_at_value(),
+                    _ => false.as_at_value(),
+                }
+                , At::Disabled => true.as_at_value()},
                 "Select Name"
             ],
             options,

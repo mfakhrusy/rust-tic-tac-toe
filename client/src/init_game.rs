@@ -7,7 +7,7 @@ pub fn view() -> Node<Msg> {
         h1![C!["text-4xl font-bold mb-4"], "Tic Tac Toe"],
         button![
             C!["bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"],
-            ev(Ev::Click, |_| Msg::StartGame),
+            ev(Ev::Click, |_| Msg::GoToGameModeSelection),
             "Start Game"
         ]
     ]

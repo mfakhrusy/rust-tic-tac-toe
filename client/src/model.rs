@@ -19,6 +19,7 @@ pub enum GameStatus {
     InitGame,
     GameMode,
     NameSelection,
+    TurnSelection,
     MainGame,
 }
 
@@ -27,7 +28,7 @@ pub enum GameType {
     MultiComputer,
 }
 
-#[derive(Display)]
+#[derive(Display, Clone)]
 pub enum PlayerSymbol {
     #[display(fmt = "X")]
     X,
@@ -35,11 +36,14 @@ pub enum PlayerSymbol {
     O,
 }
 
+#[derive(Clone)]
 pub enum PlayerStatus {
     Win,
     Lose,
+    Tie,
 }
 
+#[derive(Clone)]
 pub struct Player {
     pub name: String,
     pub symbol: PlayerSymbol,
@@ -56,6 +60,7 @@ pub struct Model {
     pub game_type: GameType,
     pub game_status: GameStatus,
     pub game_mode: Option<GameMode>,
+    pub game_turn: Option<Player>,
     pub players: Players,
     pub board_state: [[i32; 3]; 3],
 }
@@ -68,9 +73,11 @@ pub struct Model {
 #[derive(Clone)]
 // `Msg` describes the different events you can modify state with.
 pub enum Msg {
-    StartGame,
+    GoToGameModeSelection,
     PickGameMode(GameMode),
     SetPlayerOne(String),
     SetPlayerTwo(String),
+    RollPlayerTurn,
+    StartGame,
     GoBack,
 }

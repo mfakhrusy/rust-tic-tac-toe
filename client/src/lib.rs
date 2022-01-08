@@ -3,53 +3,16 @@
 // but some rules are too "annoying" or are not applicable for your case.)
 #![allow(clippy::wildcard_imports)]
 
-use derive_more::Display;
-use seed::{prelude::*, *};
 mod init_game;
 mod main_game;
+mod model;
+mod name_selection;
 mod pick_game_mode;
-mod roll_player;
 
-#[derive(Clone, Display)]
-pub enum GameMode {
-    #[display(fmt = "Player vs Player (One Computer)")]
-    PlayerVsPlayerOneComputer,
-    #[display(fmt = "Player vs Player (Two Computer)")]
-    PlayerVsPlayerTwoComputer,
-    #[display(fmt = "Player vs Computer")]
-    PlayerVsComputer,
-    #[display(fmt = "Computer vs Computer")]
-    ComputerVsComputer,
-}
-
-enum RollPlayer {
-    Init,
-    Loading,
-    Finished,
-}
-
-enum GameStatus {
-    InitGame,
-    GameMode,
-    RollPlayer(RollPlayer),
-    MainGame,
-}
-
-enum PlayerSymbol {
-    X,
-    O,
-}
-
-enum PlayerStatus {
-    Win,
-    Lose,
-}
-
-struct Player {
-    name: String,
-    symbol: PlayerSymbol,
-    status: Option<PlayerStatus>,
-}
+use model::{
+    GameMode, GameStatus, GameType, Model, Msg, Player, PlayerStatus, PlayerSymbol, Players,
+};
+use seed::{prelude::*, *};
 
 // ------ ------
 //     Init
@@ -61,35 +24,17 @@ fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
         board_state: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
         game_status: GameStatus::InitGame,
         game_mode: None,
-        player: None,
+        players: Players {
+            player_one: None,
+            player_two: None,
+        },
+        game_type: GameType::SingleComputer,
     }
-}
-
-// ------ ------
-//     Model
-// ------ ------
-
-// `Model` describes our app state.
-struct Model {
-    game_status: GameStatus,
-    game_mode: Option<GameMode>,
-    player: Option<[Player; 2]>,
-    board_state: [[i32; 3]; 3],
 }
 
 // ------ ------
 //    Update
 // ------ ------
-
-// (Remove the line below once any of your `Msg` variants doesn't implement `Copy`.)
-#[derive(Clone)]
-// `Msg` describes the different events you can modify state with.
-pub enum Msg {
-    StartGame,
-    PickGameMode(GameMode),
-    // PickPlayerName,
-    StartRollPlayer,
-}
 
 // `update` describes how to handle each `Msg`.
 fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
@@ -97,10 +42,45 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
         Msg::StartGame => model.game_status = GameStatus::GameMode,
         Msg::PickGameMode(game_mode) => {
             model.game_mode = Some(game_mode);
-            model.game_status = GameStatus::RollPlayer(RollPlayer::Init);
+            model.game_status = GameStatus::NameSelection;
+            match model.game_mode {
+                Some(GameMode::PlayerVsPlayerTwoComputer) => {
+                    model.game_type = GameType::MultiComputer;
+                }
+                _ => {
+                    model.game_type = GameType::SingleComputer;
+                }
+            }
         }
-        Msg::StartRollPlayer => {
-            model.game_status = GameStatus::RollPlayer(RollPlayer::Loading);
+        Msg::GoBack => match model.game_status {
+            GameStatus::MainGame => {
+                model.game_status = GameStatus::NameSelection;
+            }
+            GameStatus::GameMode => {
+                model.game_status = GameStatus::InitGame;
+                model.game_mode = None;
+            }
+            GameStatus::NameSelection => {
+                model.game_status = GameStatus::GameMode;
+                model.game_mode = None;
+            }
+            _ => {}
+        },
+        Msg::SetPlayerOne(name) => {
+            model.players.player_one = Some(Player {
+                name,
+                symbol: PlayerSymbol::X,
+                status: None,
+            });
+            // model.game_status = GameStatus::RollPlayer(RollPlayer::Init);
+        }
+        Msg::SetPlayerTwo(name) => {
+            model.players.player_two = Some(Player {
+                name,
+                symbol: PlayerSymbol::O,
+                status: None,
+            });
+            // model.game_status = GameStatus::RollPlayer(RollPlayer::Init);
         }
     }
 }
@@ -111,9 +91,37 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
 
 fn header(model: &Model) -> Node<Msg> {
     div![
-        C!["flex w-96 h-8"],
+        C!["flex h-20 flex-col"],
         p![
-            span![C!["text-sm font-bold mb-2"], "Game Mode: "],
+            C![match model.game_status {
+                GameStatus::InitGame => "text-sm font-bold mb-2 invisible",
+                _ => "text-sm font-bold mb-2 flex ",
+            }],
+            span![
+                C!["w-2/4"],
+                span!["Player one: "],
+                span![match &model.players.player_one {
+                    Some(player) => format!("{}", player.name),
+                    None => "".to_string(),
+                }]
+            ],
+            span![
+                C!["w-2/4"],
+                span!["Player two: "],
+                span![match &model.players.player_two {
+                    Some(player) => format!("{}", player.name),
+                    None => "".to_string(),
+                }]
+            ]
+        ],
+        p![
+            span![
+                C![match model.game_status {
+                    GameStatus::InitGame => "text-sm font-bold mb-2 invisible",
+                    _ => "text-sm font-bold mb-2",
+                }],
+                "Game Mode: "
+            ],
             span![
                 C!["text-sm font-bold mb-2"],
                 match model.game_mode {
@@ -133,18 +141,33 @@ fn header(model: &Model) -> Node<Msg> {
 fn view(model: &Model) -> Node<Msg> {
     div![
         C!["w-screen h-screen flex flex-col items-center justify-center"],
-        header(&model),
         div![
-            C!["w-96 h-96 bg-gray-200 rounded-sm"],
-            match model.game_status {
-                GameStatus::InitGame => init_game::view(),
-                GameStatus::GameMode => pick_game_mode::view(),
-                GameStatus::RollPlayer(RollPlayer::Init) => roll_player::view_init(),
-                GameStatus::RollPlayer(RollPlayer::Loading) => roll_player::view_loading(),
-                GameStatus::RollPlayer(RollPlayer::Finished) => roll_player::view_finished(),
-                GameStatus::MainGame => main_game::view(),
-            }
-        ]
+            C!["w-96"],
+            header(&model),
+            div![
+                C!["h-96 bg-gray-200 rounded-sm"],
+                match model.game_status {
+                    GameStatus::InitGame => init_game::view(),
+                    GameStatus::GameMode => pick_game_mode::view(),
+                    GameStatus::NameSelection =>
+                        name_selection::view(
+                            &model.game_mode.as_ref().unwrap_or(&GameMode::PlayerVsPlayerOneComputer),
+                            &model.game_type
+                        ),
+                    GameStatus::MainGame => main_game::view(),
+                }
+            ],
+            button![
+            C![
+                match model.game_status {
+                    GameStatus::InitGame => "invisible font-bold py-2 mt-4",
+                    _ => "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-20 mt-4",
+                }
+                ],
+            "Back",
+            ev(Ev::Click, |_| Msg::GoBack),
+        ],
+        ],
     ]
 }
 

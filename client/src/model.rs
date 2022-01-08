@@ -27,8 +27,11 @@ pub enum GameType {
     MultiComputer,
 }
 
+#[derive(Display)]
 pub enum PlayerSymbol {
+    #[display(fmt = "X")]
     X,
+    #[display(fmt = "O")]
     O,
 }
 

@@ -3,6 +3,7 @@
 // but some rules are too "annoying" or are not applicable for your case.)
 #![allow(clippy::wildcard_imports)]
 
+mod components;
 mod init_game;
 mod main_game;
 mod model;
@@ -99,7 +100,7 @@ fn header(model: &Model) -> Node<Msg> {
             }],
             span![
                 C!["w-2/4"],
-                span!["Player one: "],
+                span!["Player one (X): "],
                 span![match &model.players.player_one {
                     Some(player) => format!("{}", player.name),
                     None => "".to_string(),
@@ -107,7 +108,7 @@ fn header(model: &Model) -> Node<Msg> {
             ],
             span![
                 C!["w-2/4"],
-                span!["Player two: "],
+                span!["Player two (O): "],
                 span![match &model.players.player_two {
                     Some(player) => format!("{}", player.name),
                     None => "".to_string(),
@@ -139,6 +140,7 @@ fn header(model: &Model) -> Node<Msg> {
 }
 
 fn view(model: &Model) -> Node<Msg> {
+    let x = 4;
     div![
         C!["w-screen h-screen flex flex-col items-center justify-center"],
         div![
@@ -152,21 +154,46 @@ fn view(model: &Model) -> Node<Msg> {
                     GameStatus::NameSelection =>
                         name_selection::view(
                             &model.game_mode.as_ref().unwrap_or(&GameMode::PlayerVsPlayerOneComputer),
-                            &model.game_type
+                            &model.game_type,
+                            &model.players,
                         ),
                     GameStatus::MainGame => main_game::view(),
                 }
             ],
-            button![
-            C![
-                match model.game_status {
-                    GameStatus::InitGame => "invisible font-bold py-2 mt-4",
-                    _ => "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-20 mt-4",
-                }
+            div![
+                C!["flex justify-between"],
+                button![
+                    C![
+                        match model.game_status {
+                            GameStatus::InitGame => "invisible font-bold py-2 mt-4",
+                            _ => "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-20 mt-4",
+                        }
+                    ],
+                    "Back",
+                    ev(Ev::Click, |_| Msg::GoBack),
                 ],
-            "Back",
-            ev(Ev::Click, |_| Msg::GoBack),
-        ],
+                button![
+                    C![
+                        match model.game_status {
+                            GameStatus::NameSelection => {
+                            match (model.players.player_one.as_ref(), model.players.player_two.as_ref()) {
+                                (Some(_), Some(_)) => "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-20 mt-4",
+                                _ => "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-20 mt-4 cursor-not-allowed"
+                            }
+                        },
+                            _ => "invisible font-bold py-2 mt-4",
+                        }
+                    ],
+                    "Next",
+                    attrs! {
+                        At::Disabled => match (model.players.player_one.as_ref(), model.players.player_two.as_ref()) {
+                            (Some(_), Some(_)) => false.as_at_value(),
+                            _ => true.as_at_value(),
+                        }
+                    },
+                    ev(Ev::Click, |_| Msg::GoBack),
+                ],
+            ],
         ],
     ]
 }

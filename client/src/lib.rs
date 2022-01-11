@@ -11,7 +11,6 @@ mod name_selection;
 mod pick_game_mode;
 mod roll_player_turn;
 
-use components::player_symbol;
 use model::{
     GameMode, GameStatus, GameType, Model, Msg, Player, PlayerStatus, PlayerSymbol, Players,
 };
@@ -25,7 +24,7 @@ use seed::{prelude::*, *};
 // `init` describes what should happen when your app started.
 fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
     Model {
-        board_state: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        board_state: [[None, None, None], [None, None, None], [None, None, None]],
         game_status: GameStatus::InitGame,
         game_mode: None,
         players: Players {
@@ -116,6 +115,27 @@ fn header(model: &Model) -> Node<Msg> {
     div![
         C!["flex h-20 flex-col"],
         p![
+            span![
+                C![match model.game_status {
+                    GameStatus::InitGame => "text-sm font-bold mb-2 invisible",
+                    _ => "text-sm font-bold mb-2",
+                }],
+                "Game Mode: "
+            ],
+            span![
+                C!["text-sm font-bold mb-2"],
+                match model.game_mode {
+                    Some(GameMode::PlayerVsPlayerOneComputer) =>
+                        GameMode::PlayerVsPlayerOneComputer.to_string(),
+                    Some(GameMode::PlayerVsPlayerTwoComputer) =>
+                        GameMode::PlayerVsPlayerTwoComputer.to_string(),
+                    Some(GameMode::PlayerVsComputer) => GameMode::PlayerVsComputer.to_string(),
+                    Some(GameMode::ComputerVsComputer) => GameMode::ComputerVsComputer.to_string(),
+                    None => "".to_string(),
+                }
+            ]
+        ],
+        p![
             C![match model.game_status {
                 GameStatus::InitGame => "text-sm font-bold mb-2 invisible",
                 _ => "text-sm font-bold mb-2 flex ",
@@ -138,25 +158,24 @@ fn header(model: &Model) -> Node<Msg> {
             ]
         ],
         p![
+            C![match model.game_status {
+                GameStatus::InitGame => "text-sm font-bold mb-2 invisible",
+                GameStatus::GameMode => "text-sm font-bold mb-2 invisible",
+                GameStatus::NameSelection => "text-sm font-bold mb-2 invisible",
+                _ => "text-sm font-bold mb-2 flex ",
+            }],
             span![
-                C![match model.game_status {
-                    GameStatus::InitGame => "text-sm font-bold mb-2 invisible",
-                    _ => "text-sm font-bold mb-2",
-                }],
-                "Game Mode: "
-            ],
-            span![
-                C!["text-sm font-bold mb-2"],
-                match model.game_mode {
-                    Some(GameMode::PlayerVsPlayerOneComputer) =>
-                        GameMode::PlayerVsPlayerOneComputer.to_string(),
-                    Some(GameMode::PlayerVsPlayerTwoComputer) =>
-                        GameMode::PlayerVsPlayerTwoComputer.to_string(),
-                    Some(GameMode::PlayerVsComputer) => GameMode::PlayerVsComputer.to_string(),
-                    Some(GameMode::ComputerVsComputer) => GameMode::ComputerVsComputer.to_string(),
+                C!["w-2/4"],
+                span!["Current Turn: "],
+                span![match &model.game_turn {
+                    Some(player) => format!("{}", player.name),
                     None => "".to_string(),
-                }
-            ]
+                }],
+                span![match &model.game_turn {
+                    Some(player) => format!(" ({})", player.symbol),
+                    None => "".to_string(),
+                }]
+            ],
         ],
     ]
 }
@@ -179,7 +198,7 @@ fn view(model: &Model) -> Node<Msg> {
                             &model.players,
                         ),
                     GameStatus::TurnSelection => roll_player_turn::view(&model.game_turn, &model.players),
-                    GameStatus::MainGame => main_game::view(),
+                    GameStatus::MainGame => main_game::view(&model.board_state),
                 }
             ],
             div![
@@ -203,7 +222,7 @@ fn view(model: &Model) -> Node<Msg> {
                                 _ => "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-40 mt-4 cursor-not-allowed"
                             }
                         },
-                            _ => "invisible font-bold py-2 mt-4",
+                            _ => "hidden font-bold py-2 mt-4",
                         }
                     ],
                     "Roll Player Turn",
@@ -214,6 +233,16 @@ fn view(model: &Model) -> Node<Msg> {
                         }
                     },
                     ev(Ev::Click, |_| Msg::RollPlayerTurn),
+                ],
+                button![
+                    C![
+                        match model.game_status {
+                            GameStatus::TurnSelection => "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-40 mt-4",
+                            _ => "hidden font-bold py-2 mt-4",
+                        }
+                    ],
+                    "Start Game",
+                    ev(Ev::Click, |_| Msg::StartGame),
                 ],
             ],
         ],

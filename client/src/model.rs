@@ -55,6 +55,8 @@ pub struct Players {
     pub player_two: Option<Player>,
 }
 
+pub type BoardState = [[Option<Player>; 3]; 3];
+
 // `Model` describes our app state.
 pub struct Model {
     pub game_type: GameType,
@@ -62,7 +64,7 @@ pub struct Model {
     pub game_mode: Option<GameMode>,
     pub game_turn: Option<Player>,
     pub players: Players,
-    pub board_state: [[i32; 3]; 3],
+    pub board_state: BoardState,
 }
 
 // ------ ------

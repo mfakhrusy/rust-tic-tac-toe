@@ -24,7 +24,7 @@ use seed::{prelude::*, *};
 // `init` describes what should happen when your app started.
 fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
     Model {
-        board_state: [[None, None, None], [None, None, None], [None, None, None]],
+        board_state: [None, None, None, None, None, None, None, None, None],
         game_status: GameStatus::InitGame,
         game_mode: None,
         players: Players {
@@ -103,6 +103,16 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
         }
         Msg::StartGame => {
             model.game_status = GameStatus::MainGame;
+        }
+        Msg::PressBoardItem(index) => {
+            model.board_state[index] = model.game_turn.clone();
+            model.game_turn = match &model.game_turn {
+                Some(player) => match player.symbol {
+                    PlayerSymbol::X => model.players.player_two.clone(),
+                    PlayerSymbol::O => model.players.player_one.clone(),
+                },
+                None => None,
+            };
         }
     }
 }

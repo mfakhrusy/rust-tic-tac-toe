@@ -55,7 +55,7 @@ pub struct Players {
     pub player_two: Option<Player>,
 }
 
-pub type BoardState = [[Option<Player>; 3]; 3];
+pub type BoardState = [Option<Player>; 9];
 
 // `Model` describes our app state.
 pub struct Model {
@@ -81,5 +81,6 @@ pub enum Msg {
     SetPlayerTwo(String),
     RollPlayerTurn,
     StartGame,
+    PressBoardItem(usize),
     GoBack,
 }

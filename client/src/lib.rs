@@ -4,6 +4,7 @@
 #![allow(clippy::wildcard_imports)]
 
 mod components;
+mod game_over;
 mod init_game;
 mod main_game;
 mod model;
@@ -13,6 +14,7 @@ mod roll_player_turn;
 
 use model::{
     GameMode, GameStatus, GameType, Model, Msg, Player, PlayerStatus, PlayerSymbol, Players,
+    WIN_CONDITION,
 };
 use rand::Rng;
 use seed::{prelude::*, *};
@@ -113,6 +115,61 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
                 },
                 None => None,
             };
+            let player_one_game_index = model
+                .board_state
+                .iter()
+                .enumerate()
+                .filter_map(|(index, player)| match player {
+                    Some(p) => match p.symbol {
+                        PlayerSymbol::X => Some(index),
+                        _ => None,
+                    },
+                    None => None,
+                })
+                .map(|index| index as u8)
+                .collect::<Vec<u8>>();
+
+            let player_two_game_index = model
+                .board_state
+                .iter()
+                .enumerate()
+                .filter_map(|(index, player)| match player {
+                    Some(p) => match p.symbol {
+                        PlayerSymbol::O => Some(index),
+                        _ => None,
+                    },
+                    None => None,
+                })
+                .map(|index| index as u8)
+                .collect::<Vec<u8>>();
+
+            // compare player one and player two game index with the winning index
+            WIN_CONDITION.iter().for_each(|condition| {
+                if condition
+                    .iter()
+                    .all(|index| player_one_game_index.contains(index))
+                {
+                    model.players.player_one.as_mut().unwrap().status = Some(PlayerStatus::Win);
+                    model.players.player_two.as_mut().unwrap().status = Some(PlayerStatus::Lose);
+                    model.game_status = GameStatus::GameOver;
+                } else if condition
+                    .iter()
+                    .all(|index| player_two_game_index.contains(index))
+                {
+                    model.players.player_one.as_mut().unwrap().status = Some(PlayerStatus::Lose);
+                    model.players.player_two.as_mut().unwrap().status = Some(PlayerStatus::Win);
+                    model.game_status = GameStatus::GameOver;
+                }
+
+                let total_item_played =
+                    (player_one_game_index.len() + player_two_game_index.len()) as u8;
+
+                if total_item_played == 9 {
+                    model.players.player_one.as_mut().unwrap().status = Some(PlayerStatus::Tie);
+                    model.players.player_two.as_mut().unwrap().status = Some(PlayerStatus::Tie);
+                    model.game_status = GameStatus::GameOver;
+                }
+            });
         }
     }
 }
@@ -209,6 +266,7 @@ fn view(model: &Model) -> Node<Msg> {
                         ),
                     GameStatus::TurnSelection => roll_player_turn::view(&model.game_turn, &model.players),
                     GameStatus::MainGame => main_game::view(&model.board_state),
+                    GameStatus::GameOver => game_over::view(&model.players),
                 }
             ],
             div![

@@ -1,4 +1,5 @@
 use derive_more::Display;
+use lazy_static::lazy_static;
 // ------ ------
 //     Model
 // ------ ------
@@ -21,6 +22,7 @@ pub enum GameStatus {
     NameSelection,
     TurnSelection,
     MainGame,
+    GameOver,
 }
 
 pub enum GameType {
@@ -28,7 +30,7 @@ pub enum GameType {
     MultiComputer,
 }
 
-#[derive(Display, Clone)]
+#[derive(Display, Clone, Debug)]
 pub enum PlayerSymbol {
     #[display(fmt = "X")]
     X,
@@ -36,14 +38,14 @@ pub enum PlayerSymbol {
     O,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum PlayerStatus {
     Win,
     Lose,
     Tie,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Player {
     pub name: String,
     pub symbol: PlayerSymbol,
@@ -56,6 +58,22 @@ pub struct Players {
 }
 
 pub type BoardState = [Option<Player>; 9];
+
+lazy_static! {
+    pub static ref WIN_CONDITION: [[u8; 3]; 8] = [
+        // horizontal index win condition
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        // vertical index win condition
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        // diagonal index win condition
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+}
 
 // `Model` describes our app state.
 pub struct Model {

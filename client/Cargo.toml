@@ -19,6 +19,7 @@ wasm-bindgen-test = "0.3.18"
 seed = "0.8.0"
 derive_more = "0.99.17"
 rand = "0.8.4"
+lazy_static = "1.4.0"
 
 [profile.release]
 lto = true
